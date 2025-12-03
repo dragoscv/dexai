@@ -11,6 +11,7 @@ import {
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import type { User } from '@/types';
+import { trackUserLogin, trackUserSignup, setAnalyticsUserId, setAnalyticsUserProperties } from './analytics';
 
 interface AuthContextType {
     user: User | null;
@@ -66,6 +67,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         });
                         setUser(userData);
                     }
+                    
+                    // Track login in analytics
+                    trackUserLogin('google');
+                    setAnalyticsUserId(firebaseUser.uid);
+                    setAnalyticsUserProperties({
+                        total_points: userData.totalPoints,
+                        words_discovered: userData.wordsDiscovered,
+                    });
                 } else {
                     // Create new user document
                     const newUser: User = {
@@ -82,9 +91,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                     await setDoc(userRef, newUser);
                     setUser(newUser);
+                    
+                    // Track signup in analytics
+                    trackUserSignup('google');
+                    setAnalyticsUserId(firebaseUser.uid);
+                    setAnalyticsUserProperties({
+                        total_points: 0,
+                        words_discovered: 0,
+                    });
                 }
             } else {
                 setUser(null);
+                // Clear analytics user ID on logout
+                setAnalyticsUserId(null);
             }
 
             setLoading(false);
