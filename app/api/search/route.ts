@@ -140,10 +140,14 @@ export async function POST(request: NextRequest) {
             usageNotes: aiResponse.usageNotes || [],
             createdAt: new Date() as any,
             createdBy: 'ai',
-            createdByUserId: userId || undefined,
             verified: false,
             aiVersion: 'gpt-4o',
         };
+
+        // Add createdByUserId only if user is authenticated
+        if (userId) {
+            newWord.createdByUserId = userId;
+        }
 
         // Only add optional top-level fields if they have values
         if (aiResponse.frequencyLevel) newWord.frequencyLevel = aiResponse.frequencyLevel;
