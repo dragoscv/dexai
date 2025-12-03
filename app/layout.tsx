@@ -4,6 +4,7 @@ import { AuthProvider } from '@/lib/auth-context';
 import Header from '@/components/Header';
 import { Toaster } from 'sonner';
 import AnalyticsProvider from '@/components/AnalyticsProvider';
+import OrganizationSchema from '@/components/OrganizationSchema';
 
 export const metadata: Metadata = {
     title: 'DEXAI.ro - Dicționar Românesc cu Inteligență Artificială',
@@ -36,6 +37,7 @@ export default function RootLayout({
     return (
         <html lang="ro">
             <body className="antialiased romanian-text">
+                <OrganizationSchema />
                 <AnalyticsProvider>
                     <AuthProvider>
                         <Header />

@@ -1,6 +1,12 @@
 import { adminDb } from '@/lib/firebase-admin';
 import type { Word } from '@/types';
 import WordPageClient from '@/components/WordPageClient';
+import {
+    generateWordMetaDescription,
+    generateWordKeywords,
+    generateOGImage,
+    generateCanonicalUrl,
+} from '@/lib/seo-utils';
 
 interface PageProps {
     params: Promise<{
@@ -52,16 +58,56 @@ export async function generateMetadata(props: PageProps) {
     if (!word) {
         return {
             title: 'Cuvânt negăsit - DEXAI.ro',
+            description: 'Cuvântul căutat nu a fost găsit în dicționarul nostru.',
         };
     }
 
+    const description = generateWordMetaDescription(word);
+    const keywords = generateWordKeywords(word);
+    const ogImage = generateOGImage(word);
+    const canonical = generateCanonicalUrl(word.id);
+
     return {
-        title: `${word.display} - DEXAI.ro`,
-        description:
-            word.definitions[0]?.shortDef || `Definiția cuvântului ${word.display}`,
+        title: `${word.display} - Definiție, Sinonime, Etimologie | DEXAI.ro`,
+        description,
+        keywords,
+        alternates: {
+            canonical,
+        },
         openGraph: {
-            title: `${word.display} - DEXAI.ro`,
-            description: word.definitions[0]?.shortDef,
+            title: `${word.display} - Dicționar Românesc`,
+            description,
+            url: canonical,
+            siteName: 'DEXAI.ro',
+            locale: 'ro_RO',
+            type: 'article',
+            images: [
+                {
+                    url: ogImage,
+                    width: 1200,
+                    height: 630,
+                    alt: `Definiția cuvântului ${word.display}`,
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${word.display} - Dicționar Românesc`,
+            description,
+            images: [ogImage],
+            creator: '@dexairo',
+        },
+        other: {
+            'article:published_time': word.createdAt
+                ? new Date(word.createdAt.seconds * 1000).toISOString()
+                : undefined,
+            'article:modified_time': word.lastRegeneratedAt
+                ? new Date(word.lastRegeneratedAt.seconds * 1000).toISOString()
+                : word.createdAt
+                ? new Date(word.createdAt.seconds * 1000).toISOString()
+                : undefined,
+            'article:author': 'DEXAI.ro',
+            'article:section': 'Dicționar',
         },
     };
 }

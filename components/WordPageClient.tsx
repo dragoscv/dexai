@@ -16,6 +16,7 @@ import CollocationsCard from '@/components/CollocationsCard';
 import UsageNotesCard from '@/components/UsageNotesCard';
 import DeclensionCard from '@/components/DeclensionCard';
 import SearchLoadingModal from '@/components/SearchLoadingModal';
+import StructuredData from '@/components/StructuredData';
 
 interface WordPageClientProps {
     initialWord: Word | null;
@@ -229,6 +230,9 @@ export default function WordPageClient({ initialWord, slug }: WordPageClientProp
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* SEO Structured Data */}
+            <StructuredData word={word} />
+
             {/* Main Content */}
             <main className="container mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto space-y-6">
