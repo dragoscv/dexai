@@ -15,41 +15,47 @@ export default function ContributionsCard({ word }: ContributionsCardProps) {
 
     return (
         <>
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Contribuții</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Contribuții</h2>
 
                 <div className="space-y-3 text-sm">
                     <div>
-                        <span className="font-semibold text-gray-700">Descoperit de:</span>{' '}
-                        {word.createdBy === 'ai' ? (
-                            <span className="text-gray-600">Generare automată AI</span>
-                        ) : word.createdByUserId ? (
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Descoperit de:</span>{' '}
+                        {word.createdByUserId ? (
                             <Link
                                 href={`/user/${word.createdByUserId}`}
-                                className="text-primary-600 hover:text-primary-700"
+                                className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
                             >
                                 Vezi profil →
                             </Link>
+                        ) : word.createdBy === 'ai' ? (
+                            <span className="text-gray-600 dark:text-gray-400">Generare automată AI</span>
                         ) : (
-                            <span className="text-gray-600">Necunoscut</span>
+                            <span className="text-gray-600 dark:text-gray-400">Necunoscut</span>
                         )}
                     </div>
 
                     <div>
-                        <span className="font-semibold text-gray-700">Data adăugării:</span>{' '}
-                        <span className="text-gray-600">
-                            {word.createdAt && typeof word.createdAt === 'object' && 'toDate' in word.createdAt
-                                ? formatDate((word.createdAt as any).toDate())
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Data adăugării:</span>{' '}
+                        <span className="text-gray-600 dark:text-gray-400">
+                            {word.createdAt
+                                ? formatDate(
+                                    typeof word.createdAt === 'object' && '_seconds' in word.createdAt
+                                        ? new Date((word.createdAt as any)._seconds * 1000)
+                                        : typeof word.createdAt === 'object' && 'toDate' in word.createdAt
+                                            ? (word.createdAt as any).toDate()
+                                            : new Date(word.createdAt as any)
+                                )
                                 : 'N/A'}
                         </span>
                     </div>
 
                     {word.etymology && (
-                        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                            <h3 className="font-semibold text-gray-900 mb-2">📚 Etimologie</h3>
-                            <p className="text-gray-700">{word.etymology}</p>
+                        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-100 dark:border-blue-800/50">
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">📚 Etimologie</h3>
+                            <p className="text-gray-700 dark:text-gray-300">{word.etymology}</p>
                             {word.createdBy === 'ai' && (
-                                <p className="text-xs text-gray-500 mt-2">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                     ⚠️ Etimologie sugerată de AI (neconfirmată)
                                 </p>
                             )}
@@ -57,10 +63,10 @@ export default function ContributionsCard({ word }: ContributionsCardProps) {
                     )}
                 </div>
 
-                <div className="mt-6 pt-6 border-t">
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <button
                         onClick={() => setIsFlagModalOpen(true)}
-                        className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors"
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium transition-colors"
                     >
                         🚩 Raportează eroare
                     </button>

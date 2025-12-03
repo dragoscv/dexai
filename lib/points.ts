@@ -11,6 +11,7 @@ export const POINT_VALUES: Record<ContributionType, number> = {
     example_add: 0.5,
     synonym_add: 0.5,
     antonym_add: 0.5,
+    definition_enhance: 0.7, // Adding new definitions to existing words
     report_error: 0.0, // No points for reporting, but important for quality
 };
 
@@ -85,11 +86,44 @@ export async function awardPoints(
             data: additionalData || {},
         });
 
-        // Update user's total points
+        // Update user's statistics
         const userRef = adminDb.collection('users').doc(userId);
-        await userRef.update({
-            totalPoints: (await userRef.get()).data()?.totalPoints || 0 + points,
-        });
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            console.error('User document does not exist:', userId);
+            return {
+                success: false,
+                points: 0,
+                message: 'Utilizatorul nu există în baza de date.',
+            };
+        }
+
+        const userData = userDoc.data();
+
+        // Ensure all statistics fields exist (migration for old users)
+        const currentTotalPoints = userData?.totalPoints ?? 0;
+        const currentDailyPoints = userData?.dailyPoints ?? 0;
+        const currentWordsDiscovered = userData?.wordsDiscovered ?? 0;
+
+        const updates: any = {
+            totalPoints: currentTotalPoints + points,
+            dailyPoints: currentDailyPoints + points,
+        };
+
+        // Increment wordsDiscovered for discovery contributions
+        if (contributionType === 'discovery') {
+            updates.wordsDiscovered = currentWordsDiscovered + 1;
+            console.log('Incrementing wordsDiscovered:', {
+                userId,
+                wordId,
+                previousValue: currentWordsDiscovered,
+                newValue: updates.wordsDiscovered,
+            });
+        }
+
+        console.log('Updating user with:', updates);
+        await userRef.update(updates);
 
         return {
             success: true,

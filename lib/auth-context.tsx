@@ -38,12 +38,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const userSnap = await getDoc(userRef);
 
                 if (userSnap.exists()) {
-                    // Update last login
-                    await updateDoc(userRef, {
-                        lastLoginAt: new Date(),
-                    });
+                    const userData = userSnap.data() as User;
 
-                    setUser(userSnap.data() as User);
+                    // Migrate old users: ensure all statistics fields exist
+                    const needsMigration =
+                        userData.wordsDiscovered === undefined ||
+                        userData.dailyPoints === undefined;
+
+                    if (needsMigration) {
+                        const updates: any = {
+                            lastLoginAt: new Date(),
+                        };
+
+                        if (userData.wordsDiscovered === undefined) {
+                            updates.wordsDiscovered = 0;
+                        }
+                        if (userData.dailyPoints === undefined) {
+                            updates.dailyPoints = 0;
+                        }
+
+                        await updateDoc(userRef, updates);
+                        setUser({ ...userData, ...updates } as User);
+                    } else {
+                        // Update last login
+                        await updateDoc(userRef, {
+                            lastLoginAt: new Date(),
+                        });
+                        setUser(userData);
+                    }
                 } else {
                     // Create new user document
                     const newUser: User = {

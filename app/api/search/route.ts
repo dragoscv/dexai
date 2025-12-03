@@ -68,21 +68,6 @@ export async function POST(request: NextRequest) {
         }
 
         // Word doesn't exist - try to generate with AI
-        if (!userId) {
-            return NextResponse.json({
-                success: false,
-                message: 'Cuvântul nu există. Autentifică-te cu Google pentru a-l adăuga și câștiga puncte!',
-            });
-        }
-
-        // Check rate limit
-        if (!checkRateLimit(userId)) {
-            return NextResponse.json({
-                success: false,
-                message: 'Ai atins limita zilnică de descoperiri. Încearcă mâine!',
-            }, { status: 429 });
-        }
-
         // Generate with AI
         const aiResponse = await analyzeWordWithAI(term);
 
@@ -93,13 +78,32 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Validate discovery
-        const validationResult = await isValidDiscovery(userId, normalized, aiResponse.confidence);
-        if (!validationResult.valid) {
+        // Check AI confidence (required for all users)
+        if (aiResponse.confidence < 0.7) {
             return NextResponse.json({
                 success: false,
-                message: validationResult.reason,
+                message: 'Cuvântul nu pare a fi valid sau este prea rar pentru a fi verificat automat.',
             });
+        }
+
+        // Additional validations for authenticated users
+        if (userId) {
+            // Check rate limit
+            if (!checkRateLimit(userId)) {
+                return NextResponse.json({
+                    success: false,
+                    message: 'Ai atins limita zilnică de descoperiri. Încearcă mâine!',
+                }, { status: 429 });
+            }
+
+            // Validate discovery (duplicate check, spam check)
+            const validationResult = await isValidDiscovery(userId, normalized, aiResponse.confidence);
+            if (!validationResult.valid) {
+                return NextResponse.json({
+                    success: false,
+                    message: validationResult.reason,
+                });
+            }
         }
 
         // Create word document
@@ -109,13 +113,17 @@ export async function POST(request: NextRequest) {
             display: term,
             forms: aiResponse.forms || {},
             partOfSpeech: aiResponse.partOfSpeech as any,
-            definitions: aiResponse.definitions.map((def, idx) => ({
-                id: `def-${idx}`,
-                shortDef: def.shortDef,
-                longDef: def.longDef,
-                register: def.register as 'curent' | 'arhaic' | 'regional' | 'argou' | 'neologism' | undefined,
-                domain: def.domain,
-            })),
+            definitions: aiResponse.definitions.map((def, idx) => {
+                const definition: any = {
+                    id: `def-${idx}`,
+                    shortDef: def.shortDef,
+                };
+                // Only add optional fields if they have values
+                if (def.longDef) definition.longDef = def.longDef;
+                if (def.register) definition.register = def.register;
+                if (def.domain) definition.domain = def.domain;
+                return definition;
+            }),
             examples: aiResponse.examples.map((text) => ({
                 text,
                 source: 'ai' as const,
@@ -127,24 +135,40 @@ export async function POST(request: NextRequest) {
             syllables: aiResponse.syllables,
             etymology: aiResponse.etymology,
             tags: aiResponse.tags || [],
+            translations: aiResponse.translations || [],
+            collocations: aiResponse.collocations || [],
+            usageNotes: aiResponse.usageNotes || [],
             createdAt: new Date() as any,
             createdBy: 'ai',
-            createdByUserId: userId,
+            createdByUserId: userId || undefined,
             verified: false,
             aiVersion: 'gpt-4o',
         };
 
+        // Only add optional top-level fields if they have values
+        if (aiResponse.frequencyLevel) newWord.frequencyLevel = aiResponse.frequencyLevel;
+        if (aiResponse.difficultyLevel) newWord.difficultyLevel = aiResponse.difficultyLevel;
+        if (aiResponse.nounForms) newWord.nounForms = aiResponse.nounForms;
+        if (aiResponse.verbForms) newWord.verbForms = aiResponse.verbForms;
+        if (aiResponse.adjectiveForms) newWord.adjectiveForms = aiResponse.adjectiveForms;
+
         await wordRef.set(newWord);
 
-        // Award points
-        const pointsResult = await awardPoints(userId, normalized, 'discovery');
+        // Award points only if user is authenticated
+        let pointsResult;
+        if (userId) {
+            pointsResult = await awardPoints(userId, normalized, 'discovery');
+        }
 
         const response: SearchResponse = {
             found: true,
             word: { ...newWord, id: normalized } as Word,
             isNewDiscovery: true,
-            pointsAwarded: pointsResult.points,
-            message: `Felicitări! Ai descoperit un cuvânt nou și ai primit ${pointsResult.points} ${pointsResult.points === 1 ? 'punct' : 'puncte'}!`,
+            isAnonymousDiscovery: !userId,
+            pointsAwarded: pointsResult?.points,
+            message: userId
+                ? `Felicitări! Ai descoperit un cuvânt nou și ai primit ${pointsResult?.points} ${pointsResult?.points === 1 ? 'punct' : 'puncte'}!`
+                : 'Cuvânt adăugat cu succes! 🎉 Autentifică-te pentru a câștiga puncte pentru descoperiri ca aceasta!',
         };
 
         return NextResponse.json({ success: true, data: { ...response, wordId: normalized } });

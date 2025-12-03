@@ -1,10 +1,6 @@
-import { notFound } from 'next/navigation';
 import { adminDb } from '@/lib/firebase-admin';
 import type { Word } from '@/types';
-import WordHeader from '@/components/WordHeader';
-import DefinitionsList from '@/components/DefinitionsList';
-import SynonymsBlock from '@/components/SynonymsBlock';
-import ContributionsCard from '@/components/ContributionsCard';
+import WordPageClient from '@/components/WordPageClient';
 
 interface PageProps {
     params: Promise<{
@@ -30,6 +26,10 @@ async function getWord(slug: string): Promise<Word | null> {
                 _seconds: data.createdAt._seconds || data.createdAt.seconds,
                 _nanoseconds: data.createdAt._nanoseconds || data.createdAt.nanoseconds,
             } : null,
+            lastRegeneratedAt: data?.lastRegeneratedAt ? {
+                _seconds: data.lastRegeneratedAt._seconds || data.lastRegeneratedAt.seconds,
+                _nanoseconds: data.lastRegeneratedAt._nanoseconds || data.lastRegeneratedAt.nanoseconds,
+            } : null,
         } as Word;
     } catch (error) {
         console.error('Error fetching word:', error);
@@ -41,30 +41,8 @@ export default async function WordPage(props: PageProps) {
     const params = await props.params;
     const word = await getWord(params.slug);
 
-    if (!word) {
-        notFound();
-    }
-
-    return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Main Content */}
-            <main className="container mx-auto px-4 py-8">
-                <div className="max-w-4xl mx-auto">
-                    <WordHeader word={word} />
-                    <DefinitionsList
-                        definitions={word.definitions}
-                        examples={word.examples}
-                    />
-                    <SynonymsBlock
-                        synonyms={word.synonyms}
-                        antonyms={word.antonyms}
-                        relatedWords={word.relatedWords}
-                    />
-                    <ContributionsCard word={word} />
-                </div>
-            </main>
-        </div>
-    );
+    // Pass word (or null) to client component which will handle fetching if needed
+    return <WordPageClient initialWord={word} slug={params.slug} />;
 }
 
 export async function generateMetadata(props: PageProps) {

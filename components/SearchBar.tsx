@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-context';
 import { isValidWordFormat } from '@/lib/normalize-word';
+import SearchLoadingModal from './SearchLoadingModal';
 
 interface Suggestion {
     id: string;
@@ -149,6 +150,8 @@ export default function SearchBar() {
 
     return (
         <form onSubmit={handleSearch} className="w-full max-w-2xl mx-auto">
+            <SearchLoadingModal searchTerm={searchTerm} isOpen={isSearching} />
+
             <div className="relative" ref={wrapperRef}>
                 <input
                     type="text"
@@ -178,16 +181,16 @@ export default function SearchBar() {
                                     type="button"
                                     onClick={() => handleSuggestionClick(suggestion)}
                                     className={`w-full text-left px-6 py-4 transition-all duration-150 border-b border-gray-50 last:border-b-0 group ${index === selectedIndex
-                                            ? 'bg-gradient-to-r from-primary-50 to-primary-100/50'
-                                            : 'hover:bg-gray-50'
+                                        ? 'bg-gradient-to-r from-primary-50 to-primary-100/50'
+                                        : 'hover:bg-gray-50'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-baseline gap-2 mb-1">
                                                 <span className={`font-semibold text-lg truncate ${index === selectedIndex
-                                                        ? 'text-primary-700'
-                                                        : 'text-gray-900'
+                                                    ? 'text-primary-700'
+                                                    : 'text-gray-900'
                                                     }`}>
                                                     {suggestion.display}
                                                 </span>
@@ -224,11 +227,17 @@ export default function SearchBar() {
                             ))}
                         </div>
                         <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-6 py-3 border-t border-gray-100">
-                            <p className="text-xs text-gray-600 flex items-center gap-2">
+                            <p className="text-xs text-gray-600 flex items-center gap-2 mb-1">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>Folosește săgețile ↑↓ pentru navigare, Enter pentru selectare</span>
+                            </p>
+                            <p className="text-xs text-blue-600 flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Poți căuta fără diacritice - rezultatele includ forma corectă</span>
                             </p>
                         </div>
                     </div>

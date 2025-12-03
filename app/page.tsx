@@ -67,12 +67,12 @@ export default async function HomePage() {
             <section className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                     <StatsCard
-                        label="Cuvinte în bază"
+                        label="Cuvinte adăugate"
                         value={stats.totalWords}
                         icon="📚"
                     />
                     <StatsCard
-                        label="Utilizatori activi"
+                        label="Utilizatori înregistrați"
                         value={stats.totalUsers}
                         icon="👥"
                     />

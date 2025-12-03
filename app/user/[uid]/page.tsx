@@ -35,13 +35,46 @@ async function getUserContributions(uid: string): Promise<Contribution[]> {
             .limit(10)
             .get();
 
-        return snapshot.docs.map((doc) => ({
+        const contributions = snapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
         })) as Contribution[];
+
+        // Fetch word data for each contribution
+        const contributionsWithWords = await Promise.all(
+            contributions.map(async (contribution) => {
+                try {
+                    const wordDoc = await adminDb.collection('words').doc(contribution.wordId).get();
+                    return {
+                        ...contribution,
+                        wordDisplay: wordDoc.exists ? (wordDoc.data()?.display || contribution.wordId) : contribution.wordId,
+                    };
+                } catch (error) {
+                    console.error('Error fetching word:', error);
+                    return { ...contribution, wordDisplay: contribution.wordId };
+                }
+            })
+        );
+
+        return contributionsWithWords;
     } catch (error) {
         console.error('Error fetching contributions:', error);
         return [];
+    }
+}
+
+async function getTotalContributionsCount(uid: string): Promise<number> {
+    try {
+        const snapshot = await adminDb
+            .collection('contributions')
+            .where('userId', '==', uid)
+            .count()
+            .get();
+
+        return snapshot.data().count;
+    } catch (error) {
+        console.error('Error fetching total contributions:', error);
+        return 0;
     }
 }
 
@@ -53,7 +86,10 @@ export default async function UserProfilePage(props: PageProps) {
         notFound();
     }
 
-    const contributions = await getUserContributions(params.uid);
+    const [contributions, totalContributionsCount] = await Promise.all([
+        getUserContributions(params.uid),
+        getTotalContributionsCount(params.uid),
+    ]);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -101,10 +137,10 @@ export default async function UserProfilePage(props: PageProps) {
                             </div>
                             <div className="text-center p-4 bg-blue-50 rounded-lg">
                                 <div className="text-3xl font-bold text-blue-600">
-                                    {formatNumber(contributions.length)}
+                                    {formatNumber(totalContributionsCount)}
                                 </div>
                                 <div className="text-sm text-gray-600 mt-1">
-                                    Contribuții recente
+                                    Contribuții totale
                                 </div>
                             </div>
                         </div>
@@ -140,9 +176,9 @@ export default async function UserProfilePage(props: PageProps) {
                                                 </span>
                                                 <Link
                                                     href={`/cuvant/${contribution.wordId}`}
-                                                    className="text-primary-600 hover:text-primary-700 ml-2"
+                                                    className="text-primary-600 hover:text-primary-700 hover:underline ml-2 font-semibold"
                                                 >
-                                                    Vezi cuvântul →
+                                                    {(contribution as any).wordDisplay || contribution.wordId}
                                                 </Link>
                                             </div>
                                             <span className="text-sm text-gray-500">
