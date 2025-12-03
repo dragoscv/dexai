@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { signOut } from 'firebase/auth';
+import Link from 'next/link';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 import AuthModal from './AuthModal';
@@ -92,18 +93,18 @@ export default function AuthButton() {
                                 {user.totalPoints || 0} puncte
                             </p>
                         </div>
-                        <a
+                        <Link
                             href={`/user/${user.uid}`}
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                         >
                             📊 Profilul meu
-                        </a>
-                        <a
+                        </Link>
+                        <Link
                             href="/top"
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                         >
                             🏆 Clasament
-                        </a>
+                        </Link>
                         <div className="border-t border-gray-100 mt-2 pt-2">
                             <button
                                 onClick={handleSignOut}

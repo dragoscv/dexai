@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import type { LeaderboardEntry } from '@/types';
 import UserAvatar from './UserAvatar';
 import { formatNumber } from '@/lib/utils';
@@ -84,19 +85,19 @@ export default function LeaderboardTable({
                             <td className="py-3 px-4">
                                 <span
                                     className={`font-bold ${index === 0
-                                            ? 'text-yellow-600'
-                                            : index === 1
-                                                ? 'text-gray-500'
-                                                : index === 2
-                                                    ? 'text-orange-600'
-                                                    : 'text-gray-700'
+                                        ? 'text-yellow-600'
+                                        : index === 1
+                                            ? 'text-gray-500'
+                                            : index === 2
+                                                ? 'text-orange-600'
+                                                : 'text-gray-700'
                                         }`}
                                 >
                                     {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`}
                                 </span>
                             </td>
                             <td className="py-3 px-4">
-                                <a
+                                <Link
                                     href={`/user/${leader.uid}`}
                                     className="flex items-center gap-3 hover:text-primary-600 transition-colors"
                                 >
@@ -106,7 +107,7 @@ export default function LeaderboardTable({
                                         size="sm"
                                     />
                                     <span className="font-medium">{leader.displayName}</span>
-                                </a>
+                                </Link>
                             </td>
                             <td className="py-3 px-4 text-right font-semibold text-primary-600">
                                 {formatNumber(leader.totalPoints)}

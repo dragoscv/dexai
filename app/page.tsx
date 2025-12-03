@@ -2,6 +2,7 @@ import SearchBar from '@/components/SearchBar';
 import LeaderboardTable from '@/components/LeaderboardTable';
 import WordOfTheDay from '@/components/WordOfTheDay';
 import StatsCard from '@/components/StatsCard';
+import Link from 'next/link';
 import { adminDb } from '@/lib/firebase-admin';
 
 async function getStatistics() {
@@ -98,12 +99,12 @@ export default async function HomePage() {
                             <h3 className="text-2xl font-bold text-gray-900">
                                 🏆 Top Jucători
                             </h3>
-                            <a
+                            <Link
                                 href="/top"
                                 className="text-primary-600 hover:text-primary-700 font-medium"
                             >
                                 Vezi clasamentul complet →
-                            </a>
+                            </Link>
                         </div>
                         <LeaderboardTable limit={5} />
                     </div>
