@@ -1,7 +1,8 @@
 import SearchBar from '@/components/SearchBar';
 import LeaderboardTable from '@/components/LeaderboardTable';
 import WordOfTheDay from '@/components/WordOfTheDay';
-import StatsCard from '@/components/StatsCard';
+import RealtimeStats from '@/components/RealtimeStats';
+import RecentDiscoveries from '@/components/RecentDiscoveries';
 import Link from 'next/link';
 import { adminDb } from '@/lib/firebase-admin';
 
@@ -65,22 +66,13 @@ export default async function HomePage() {
 
             {/* Statistics */}
             <section className="container mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    <StatsCard
-                        label="Cuvinte adăugate"
-                        value={stats.totalWords}
-                        icon="📚"
-                    />
-                    <StatsCard
-                        label="Utilizatori înregistrați"
-                        value={stats.totalUsers}
-                        icon="👥"
-                    />
-                    <StatsCard
-                        label="Cuvinte adăugate azi"
-                        value={stats.wordsAddedToday}
-                        icon="✨"
-                    />
+                <RealtimeStats initialStats={stats} />
+            </section>
+
+            {/* Recent Discoveries */}
+            <section className="container mx-auto px-4 py-8">
+                <div className="max-w-4xl mx-auto">
+                    <RecentDiscoveries />
                 </div>
             </section>
 
