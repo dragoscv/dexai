@@ -10,12 +10,12 @@ import type { Word } from '@/types';
 export function generateWordMetaDescription(word: Word): string {
     const partOfSpeech = word.partOfSpeech || 'cuvânt';
     const definition = word.definitions?.[0]?.shortDef || word.definitions?.[0]?.longDef || '';
-    
+
     // Trim definition to ~150 characters for optimal meta description length
-    const shortDefinition = definition.length > 150 
-        ? definition.substring(0, 147) + '...' 
+    const shortDefinition = definition.length > 150
+        ? definition.substring(0, 147) + '...'
         : definition;
-    
+
     return `${word.display} - ${partOfSpeech}. ${shortDefinition} Descoperă definiția completă, exemple, sinonime și etimologie pe DEXAI.ro.`;
 }
 
@@ -73,10 +73,10 @@ export function generateCanonicalUrl(wordId: string): string {
  */
 export function extractMainDefinition(word: Word, maxLength: number = 200): string {
     const definition = word.definitions?.[0]?.longDef || word.definitions?.[0]?.shortDef || '';
-    
+
     if (definition.length <= maxLength) {
         return definition;
     }
-    
+
     return definition.substring(0, maxLength - 3) + '...';
 }

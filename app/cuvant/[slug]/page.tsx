@@ -104,8 +104,8 @@ export async function generateMetadata(props: PageProps) {
             'article:modified_time': word.lastRegeneratedAt
                 ? new Date(word.lastRegeneratedAt.seconds * 1000).toISOString()
                 : word.createdAt
-                ? new Date(word.createdAt.seconds * 1000).toISOString()
-                : undefined,
+                    ? new Date(word.createdAt.seconds * 1000).toISOString()
+                    : undefined,
             'article:author': 'DEXAI.ro',
             'article:section': 'Dicționar',
         },

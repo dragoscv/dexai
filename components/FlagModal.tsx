@@ -93,7 +93,7 @@ export default function FlagModal({ isOpen, onClose, wordId, wordDisplay }: Flag
             if (data.success) {
                 // Track content flag analytics
                 trackContentFlag(wordId, reason.trim());
-                
+
                 toast.success('Mulțumim pentru raport! Vom verifica și rezolva problema.');
                 onClose();
             } else {

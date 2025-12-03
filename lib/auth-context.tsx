@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         });
                         setUser(userData);
                     }
-                    
+
                     // Track login in analytics
                     trackUserLogin('google');
                     setAnalyticsUserId(firebaseUser.uid);
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                     await setDoc(userRef, newUser);
                     setUser(newUser);
-                    
+
                     // Track signup in analytics
                     trackUserSignup('google');
                     setAnalyticsUserId(firebaseUser.uid);

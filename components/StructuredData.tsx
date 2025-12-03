@@ -10,7 +10,7 @@ interface StructuredDataProps {
  */
 export default function StructuredData({ word }: StructuredDataProps) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dexai.ro';
-    
+
     // DefinedTerm schema for dictionary entry
     const definedTermSchema = {
         '@context': 'https://schema.org',
@@ -70,7 +70,7 @@ export default function StructuredData({ word }: StructuredDataProps) {
             url: baseUrl,
         },
         datePublished: word.createdAt ? new Date(word.createdAt.seconds * 1000).toISOString() : undefined,
-        dateModified: word.lastRegeneratedAt 
+        dateModified: word.lastRegeneratedAt
             ? new Date(word.lastRegeneratedAt.seconds * 1000).toISOString()
             : word.createdAt ? new Date(word.createdAt.seconds * 1000).toISOString() : undefined,
         mainEntityOfPage: {

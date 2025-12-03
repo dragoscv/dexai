@@ -134,13 +134,13 @@ export default function SearchBar() {
             if (data.success && data.data?.wordId) {
                 // Track search analytics
                 trackWordSearch(searchTerm, 1);
-                
+
                 // Track discovery if it's a new word
                 if (data.data.isNewDiscovery) {
                     trackWordDiscovery(searchTerm, user?.uid);
                     toast.success(data.data.message || 'Cuvânt descoperit!');
                 }
-                
+
                 // Redirect to word page
                 router.push(`/cuvant/${data.data.wordId}`);
             } else {

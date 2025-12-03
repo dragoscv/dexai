@@ -28,7 +28,7 @@ if (typeof window !== 'undefined') {
 
     auth = getAuth(app);
     db = getFirestore(app);
-    
+
     // Initialize Analytics (only in browser and production)
     if (process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID) {
         analytics = getAnalytics(app);

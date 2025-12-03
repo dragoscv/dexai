@@ -4,7 +4,7 @@
  */
 export default function OrganizationSchema() {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dexai.ro';
-    
+
     const organizationSchema = {
         '@context': 'https://schema.org',
         '@type': 'Organization',

@@ -96,7 +96,7 @@ export default async function UserProfilePage(props: PageProps) {
         <div className="min-h-screen bg-gray-50">
             {/* Profile View Tracking */}
             <ProfileViewTracker profileUserId={params.uid} />
-            
+
             {/* Main Content */}
             <main className="container mx-auto px-4 py-12">
                 <div className="max-w-4xl mx-auto">
