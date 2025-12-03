@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import admin from '@/lib/firebase-admin';
+import { checkEndpointRateLimit } from '@/lib/rate-limit';
 import type { VoteType, WordVote } from '@/types';
 
 interface RouteContext {
@@ -106,6 +107,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
                 { success: false, message: 'Invalid authentication token' },
                 { status: 401 }
             );
+        }
+
+        // Rate limit: 20 votes per minute per user
+        if (!checkEndpointRateLimit(userId, 'vote', 20, 60 * 1000)) {
+            return NextResponse.json({
+                success: false,
+                message: 'Prea multe voturi. Te rugăm să încetinești.',
+            }, { status: 429 });
         }
 
         // Check if word exists

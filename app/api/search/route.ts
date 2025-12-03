@@ -3,6 +3,8 @@ import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { analyzeWordWithAI, checkRateLimit } from '@/lib/azure-ai';
 import { normalizeWord, isValidWordFormat } from '@/lib/normalize-word';
 import { awardPoints, isValidDiscovery } from '@/lib/points';
+import { checkIPRateLimit, getClientIP } from '@/lib/rate-limit';
+import { sanitizeWord } from '@/lib/sanitize';
 import type { SearchResponse, Word } from '@/types';
 
 export async function POST(request: NextRequest) {
@@ -24,8 +26,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Sanitize input
+        const sanitized = sanitizeWord(term);
+
         // Normalize the word for database lookup
-        const normalized = normalizeWord(term);
+        const normalized = normalizeWord(sanitized);
 
         // Log the search
         const authHeader = request.headers.get('authorization');
@@ -68,8 +73,19 @@ export async function POST(request: NextRequest) {
         }
 
         // Word doesn't exist - try to generate with AI
+        // Apply rate limiting for anonymous users (IP-based)
+        if (!userId) {
+            const clientIP = getClientIP(request);
+            if (!checkIPRateLimit(clientIP, 10, 60 * 60 * 1000)) {
+                return NextResponse.json({
+                    success: false,
+                    message: 'Prea multe cereri. Te rugăm să încerci din nou mai târziu.',
+                }, { status: 429 });
+            }
+        }
+
         // Generate with AI
-        const aiResponse = await analyzeWordWithAI(term);
+        const aiResponse = await analyzeWordWithAI(sanitized);
 
         if (!aiResponse || !aiResponse.isValid) {
             return NextResponse.json({

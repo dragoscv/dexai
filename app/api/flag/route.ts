@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { checkEndpointRateLimit } from '@/lib/rate-limit';
+import { sanitizeText } from '@/lib/sanitize';
 
 export async function POST(request: NextRequest) {
     try {
@@ -41,6 +43,17 @@ export async function POST(request: NextRequest) {
             }, { status: 401 });
         }
 
+        // Rate limit: 5 flags per hour per user
+        if (!checkEndpointRateLimit(userId, 'flag', 5, 60 * 60 * 1000)) {
+            return NextResponse.json({
+                success: false,
+                message: 'Prea multe raportări. Te rugăm să aștepți.',
+            }, { status: 429 });
+        }
+
+        // Sanitize input
+        const sanitizedReason = sanitizeText(reason);
+
         // Check if word exists
         const wordDoc = await adminDb.collection('words').doc(wordId).get();
         if (!wordDoc.exists) {
@@ -54,7 +67,7 @@ export async function POST(request: NextRequest) {
         const flagData = {
             wordId,
             userId,
-            reason: reason.trim(),
+            reason: sanitizedReason,
             status: 'open',
             createdAt: new Date(),
         };

@@ -64,13 +64,29 @@ service cloud.firestore {
       // Only authenticated users can read their own search logs
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       
-      // Only authenticated users can create search logs
-      allow create: if isAuthenticated() && 
-                       request.resource.data.userId == request.auth.uid &&
-                       request.resource.data.keys().hasAll(['userId', 'query', 'timestamp', 'found']);
+      // Both authenticated and anonymous users can create search logs
+      allow create: if request.resource.data.keys().hasAll(['term', 'normalizedTerm', 'found', 'createdAt']) &&
+                       (!request.resource.data.keys().hasAny(['userId']) || 
+                        (isAuthenticated() && request.resource.data.userId == request.auth.uid));
       
       // No updates or deletes
       allow update, delete: if false;
+    }
+    
+    // Word votes collection
+    match /wordVotes/{voteId} {
+      // Anyone can read vote counts (aggregated in word document)
+      allow read: if true;
+      
+      // Only authenticated users can create/update their own votes
+      // Vote ID must be in format: wordId_userId
+      allow create, update: if isAuthenticated() && 
+                               request.resource.data.userId == request.auth.uid &&
+                               request.resource.data.keys().hasAll(['wordId', 'userId', 'voteType', 'createdAt', 'updatedAt']) &&
+                               request.resource.data.voteType in ['like', 'dislike', 'validate', 'report_error'];
+      
+      // Users can delete their own votes
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
     
     // Contributions collection
