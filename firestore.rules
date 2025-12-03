@@ -1,0 +1,107 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    
+    function isValidWord() {
+      return request.resource.data.keys().hasAll(['lemma', 'display', 'partOfSpeech', 'definitions', 'createdAt']) &&
+             request.resource.data.lemma is string &&
+             request.resource.data.display is string &&
+             request.resource.data.partOfSpeech is string &&
+             request.resource.data.definitions is list &&
+             request.resource.data.definitions.size() > 0;
+    }
+    
+    function isValidUser() {
+      return request.resource.data.keys().hasAll(['uid', 'displayName', 'totalPoints', 'createdAt']) &&
+             request.resource.data.uid is string &&
+             request.resource.data.displayName is string &&
+             request.resource.data.totalPoints is number &&
+             request.resource.data.totalPoints >= 0;
+    }
+    
+    // Users collection
+    match /users/{uid} {
+      // Anyone can read user profiles (for leaderboard)
+      allow read: if true;
+      
+      // Users can only create/update their own profile
+      allow create: if isOwner(uid) && isValidUser();
+      allow update: if isOwner(uid) && isValidUser() &&
+                       // Prevent tampering with totalPoints
+                       request.resource.data.totalPoints >= resource.data.totalPoints;
+      
+      // No one can delete user profiles
+      allow delete: if false;
+    }
+    
+    // Words collection
+    match /words/{wordId} {
+      // Anyone can read words
+      allow read: if true;
+      
+      // Only authenticated users can create words
+      allow create: if isAuthenticated() && isValidWord();
+      
+      // Only system can update words (through Cloud Functions or admin)
+      allow update: if false;
+      
+      // No one can delete words
+      allow delete: if false;
+    }
+    
+    // Search logs collection
+    match /searchLogs/{logId} {
+      // Only authenticated users can read their own search logs
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Only authenticated users can create search logs
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'query', 'timestamp', 'found']);
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // Contributions collection
+    match /contributions/{contributionId} {
+      // Anyone can read contributions
+      allow read: if true;
+      
+      // Only authenticated users can create contributions
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'wordId', 'type', 'createdAt']);
+      
+      // Users can update their own contributions
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Users can delete their own contributions
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Flags collection (for reporting inappropriate content)
+    match /flags/{flagId} {
+      // Only authenticated users can read flags
+      allow read: if isAuthenticated();
+      
+      // Only authenticated users can create flags
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'wordId', 'reason', 'createdAt']);
+      
+      // No updates or deletes (admin only through Cloud Functions)
+      allow update, delete: if false;
+    }
+  }
+}
