@@ -6,12 +6,8 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const limit = parseInt(searchParams.get('limit') || '10', 10);
-        const period = searchParams.get('period') || 'allTime';
 
-        let query = adminDb.collection('users').orderBy('totalPoints', 'desc');
-
-        // For time-based periods, we'd need additional logic
-        // This is simplified - in production you'd filter by date ranges
+        const query = adminDb.collection('users').orderBy('totalPoints', 'desc');
 
         const snapshot = await query.limit(limit).get();
 

@@ -1,5 +1,4 @@
 import type { Word } from '@/types';
-import Link from 'next/link';
 
 interface WordHeaderProps {
     word: Word;
