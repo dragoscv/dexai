@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-context';
 import type { VoteType, Word } from '@/types';
+import { trackVote } from '@/lib/analytics';
 
 interface WordVotingButtonsProps {
     word: Word;
@@ -84,6 +85,11 @@ export default function WordVotingButtons({ word, className = '' }: WordVotingBu
             if (data.success) {
                 setCurrentVote(newVote);
                 setCounts(data.data.counts);
+
+                // Track vote analytics (only when voting, not when removing)
+                if (newVote !== null) {
+                    trackVote(newVote, word.id, user?.uid);
+                }
 
                 if (newVote === null) {
                     toast.success('Votul a fost eliminat');

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-context';
+import { trackContentFlag } from '@/lib/analytics';
 
 interface FlagModalProps {
     isOpen: boolean;
@@ -90,6 +91,9 @@ export default function FlagModal({ isOpen, onClose, wordId, wordDisplay }: Flag
             const data = await response.json();
 
             if (data.success) {
+                // Track content flag analytics
+                trackContentFlag(wordId, reason.trim());
+                
                 toast.success('Mulțumim pentru raport! Vom verifica și rezolva problema.');
                 onClose();
             } else {

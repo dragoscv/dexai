@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import UserAvatar from '@/components/UserAvatar';
 import { formatNumber, formatDate } from '@/lib/utils';
+import ProfileViewTracker from '@/components/ProfileViewTracker';
 
 interface PageProps {
     params: Promise<{
@@ -93,6 +94,9 @@ export default async function UserProfilePage(props: PageProps) {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Profile View Tracking */}
+            <ProfileViewTracker profileUserId={params.uid} />
+            
             {/* Main Content */}
             <main className="container mx-auto px-4 py-12">
                 <div className="max-w-4xl mx-auto">

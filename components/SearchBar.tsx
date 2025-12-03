@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-context';
 import { isValidWordFormat } from '@/lib/normalize-word';
 import SearchLoadingModal from './SearchLoadingModal';
+import { trackWordSearch, trackWordDiscovery } from '@/lib/analytics';
 
 interface Suggestion {
     id: string;
@@ -21,7 +22,7 @@ export default function SearchBar() {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const router = useRouter();
-    const { getIdToken } = useAuth();
+    const { user, getIdToken } = useAuth();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     // Close suggestions when clicking outside
@@ -131,13 +132,20 @@ export default function SearchBar() {
             const data = await response.json();
 
             if (data.success && data.data?.wordId) {
-                // Show success message if it's a new discovery
+                // Track search analytics
+                trackWordSearch(searchTerm, 1);
+                
+                // Track discovery if it's a new word
                 if (data.data.isNewDiscovery) {
+                    trackWordDiscovery(searchTerm, user?.uid);
                     toast.success(data.data.message || 'Cuvânt descoperit!');
                 }
+                
                 // Redirect to word page
                 router.push(`/cuvant/${data.data.wordId}`);
             } else {
+                // Track search with no results
+                trackWordSearch(searchTerm, 0);
                 toast.error(data.message || 'Eroare la căutare');
             }
         } catch (error) {

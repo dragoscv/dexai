@@ -1,12 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LeaderboardTable from '@/components/LeaderboardTable';
+import { trackLeaderboardView } from '@/lib/analytics';
 
 type Period = 'today' | 'week' | 'month' | 'allTime';
 
 export default function TopPage() {
     const [selectedPeriod, setSelectedPeriod] = useState<Period>('allTime');
+
+    // Track leaderboard view on mount
+    useEffect(() => {
+        trackLeaderboardView();
+    }, []);
 
     const periods: Array<{ value: Period; label: string }> = [
         { value: 'today', label: 'Azi' },
