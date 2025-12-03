@@ -20,9 +20,16 @@ async function getWord(slug: string): Promise<Word | null> {
             return null;
         }
 
+        const data = wordDoc.data() as any;
+
+        // Serialize Firestore Timestamps to plain objects for Client Components
         return {
             id: wordDoc.id,
-            ...wordDoc.data(),
+            ...data,
+            createdAt: data?.createdAt ? {
+                _seconds: data.createdAt._seconds || data.createdAt.seconds,
+                _nanoseconds: data.createdAt._nanoseconds || data.createdAt.nanoseconds,
+            } : null,
         } as Word;
     } catch (error) {
         console.error('Error fetching word:', error);
