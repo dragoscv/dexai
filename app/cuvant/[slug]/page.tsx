@@ -7,6 +7,7 @@ import {
     generateOGImage,
     generateCanonicalUrl,
 } from '@/lib/seo-utils';
+import { toISOStringSafe } from '@/lib/timestamp-utils';
 
 interface PageProps {
     params: Promise<{
@@ -98,14 +99,8 @@ export async function generateMetadata(props: PageProps) {
             creator: '@dexairo',
         },
         other: {
-            'article:published_time': word.createdAt
-                ? new Date(word.createdAt.seconds * 1000).toISOString()
-                : undefined,
-            'article:modified_time': word.lastRegeneratedAt
-                ? new Date(word.lastRegeneratedAt.seconds * 1000).toISOString()
-                : word.createdAt
-                    ? new Date(word.createdAt.seconds * 1000).toISOString()
-                    : undefined,
+            'article:published_time': toISOStringSafe(word.createdAt),
+            'article:modified_time': toISOStringSafe(word.lastRegeneratedAt) || toISOStringSafe(word.createdAt),
             'article:author': 'DEXAI.ro',
             'article:section': 'Dicționar',
         },

@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import Link from 'next/link';
 import type { Word } from '@/types';
+import { toDateSafe } from '@/lib/timestamp-utils';
 
 export default function RecentDiscoveries() {
     const [recentWords, setRecentWords] = useState<Word[]>([]);
@@ -68,7 +69,8 @@ export default function RecentDiscoveries() {
             ) : (
                 <div className="space-y-3">
                     {recentWords.map((word) => {
-                        const timeAgo = word.createdAt?.toDate ? getTimeAgo(word.createdAt.toDate()) : 'recent';
+                        const date = toDateSafe(word.createdAt);
+                        const timeAgo = date ? getTimeAgo(date) : 'recent';
                         return (
                             <Link
                                 key={word.id}

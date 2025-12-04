@@ -1,4 +1,5 @@
 import type { Word } from '@/types';
+import { toISOStringSafe } from '@/lib/timestamp-utils';
 
 interface StructuredDataProps {
     word: Word;
@@ -69,10 +70,8 @@ export default function StructuredData({ word }: StructuredDataProps) {
             name: 'DEXAI.ro',
             url: baseUrl,
         },
-        datePublished: word.createdAt ? new Date(word.createdAt.seconds * 1000).toISOString() : undefined,
-        dateModified: word.lastRegeneratedAt
-            ? new Date(word.lastRegeneratedAt.seconds * 1000).toISOString()
-            : word.createdAt ? new Date(word.createdAt.seconds * 1000).toISOString() : undefined,
+        datePublished: toISOStringSafe(word.createdAt),
+        dateModified: toISOStringSafe(word.lastRegeneratedAt) || toISOStringSafe(word.createdAt),
         mainEntityOfPage: {
             '@type': 'WebPage',
             '@id': `${baseUrl}/cuvant/${word.id}`,

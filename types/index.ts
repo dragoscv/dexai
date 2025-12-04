@@ -2,6 +2,12 @@
 
 import { Timestamp } from 'firebase/firestore';
 
+// Serialized timestamp for client components (plain object from Firestore)
+export interface SerializedTimestamp {
+    _seconds: number;
+    _nanoseconds: number;
+}
+
 // User types
 export interface User {
     uid: string;
@@ -137,13 +143,13 @@ export interface Word {
     usageNotes?: UsageNote[];
     frequencyLevel?: 'very_rare' | 'rare' | 'common' | 'very_common';
     difficultyLevel?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-    createdAt: Timestamp;
+    createdAt: Timestamp | SerializedTimestamp;
     createdBy: 'ai' | 'user' | 'import';
     createdByUserId?: string;
     verified: boolean;
     aiVersion?: string;
     // Development/regeneration tracking
-    lastRegeneratedAt?: Timestamp;
+    lastRegeneratedAt?: Timestamp | SerializedTimestamp;
     regenerationCount?: number;
     // Community voting
     likesCount?: number;
