@@ -4,6 +4,7 @@ Un dicționar colaborativ românesc alimentat de inteligență artificială, und
 
 ## 🌟 Caracteristici
 
+### Core Features
 - **Căutare inteligentă de cuvinte** cu generare automată de definiții prin GPT-4o
 - **Gamificare** - primești puncte pentru descoperirea de cuvinte noi
 - **Clasament în timp real** - competiție între utilizatori
@@ -11,14 +12,37 @@ Un dicționar colaborativ românesc alimentat de inteligență artificială, und
 - **Contribuții comunitare** - adaugă exemple, sinonime, raportează erori
 - **Autentificare Google** - acces rapid și sigur
 
+### Analytics & Tracking
+- **Firebase Analytics**: 15+ custom events pentru comportament utilizatori
+- **Automatic Page Tracking**: Urmărire automată a paginilor vizitate
+- **User Behavior Analytics**: Tracking pentru căutări, voturi, flag-uri, profile
+- **Performance Monitoring**: Metrici de performanță și engagement
+
+### SEO Optimization
+- **robots.txt & sitemap.xml**: Indexare optimală de către motoarele de căutare
+- **JSON-LD Structured Data**: Rich snippets pentru rezultate de căutare
+- **Open Graph & Twitter Cards**: Optimizare pentru social media sharing
+- **Canonical URLs**: Previne duplicate content penalties
+- **Dynamic Metadata**: Title, description, keywords optimizate pentru fiecare pagină
+
+### Developer Tools
+- **Git Hooks (Husky)**: Verificări automate pre-commit, commit-msg, pre-push
+- **Commitlint**: Enforces Conventional Commits format
+- **Standard-version**: Automated changelog și semantic versioning
+- **Type Safety**: Full TypeScript cu strict mode
+- **Build Verification**: Pre-push hooks previn deploy de cod defect
+
 ## 🛠️ Stack Tehnologic
 
-- **Framework**: Next.js 15+ (App Router)
+- **Framework**: Next.js 16+ (App Router) with React 19
 - **Styling**: Tailwind CSS 3
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth (Google Provider)
+- **Analytics**: Firebase Analytics with custom event tracking
 - **AI**: Azure OpenAI GPT-4o
-- **Language**: TypeScript
+- **Language**: TypeScript with strict mode
+- **Git Hooks**: Husky + Commitlint + Lint-staged
+- **Versioning**: Standard-version (Semantic Versioning)
 - **Deployment**: Vercel (recomandat)
 
 ## 📁 Structura Proiectului
@@ -28,10 +52,14 @@ dexai/
 ├── app/                      # Next.js App Router
 │   ├── api/                  # API Routes
 │   │   ├── search/           # Endpoint căutare cuvinte
-│   │   └── leaderboard/      # Endpoint clasament
+│   │   ├── leaderboard/      # Endpoint clasament
+│   │   ├── flag/             # Endpoint raportare erori
+│   │   │   └── vote/             # Endpoint votare cuvinte
 │   ├── cuvant/[slug]/        # Pagină detalii cuvânt
 │   ├── top/                  # Pagină clasament complet
 │   ├── user/[uid]/           # Pagină profil utilizator
+│   ├── robots.ts             # SEO: Crawling rules
+│   ├── sitemap.ts            # SEO: Dynamic sitemap
 │   ├── layout.tsx            # Root layout
 │   ├── page.tsx              # Homepage
 │   └── globals.css           # Global styles
@@ -42,9 +70,15 @@ dexai/
 │   ├── DefinitionsList.tsx
 │   ├── SynonymsBlock.tsx
 │   ├── ContributionsCard.tsx
+│   ├── WordVotingButtons.tsx
+│   ├── FlagModal.tsx
 │   ├── UserAvatar.tsx
 │   ├── WordOfTheDay.tsx
-│   └── StatsCard.tsx
+│   ├── StatsCard.tsx
+│   ├── AnalyticsProvider.tsx  # Analytics tracking
+│   ├── ProfileViewTracker.tsx # Profile analytics
+│   ├── StructuredData.tsx     # SEO: JSON-LD schemas
+│   └── OrganizationSchema.tsx # SEO: Organization schema
 ├── lib/                      # Utilities & Services
 │   ├── firebase.ts           # Firebase client config
 │   ├── firebase-admin.ts     # Firebase Admin SDK
@@ -53,9 +87,21 @@ dexai/
 │   ├── points.ts             # Gamification logic
 │   ├── validation.ts         # Zod schemas
 │   ├── utils.ts              # General utilities
+│   ├── analytics.ts          # Firebase Analytics events
+│   ├── seo-utils.ts          # SEO helper functions
+│   ├── timestamp-utils.ts    # Safe timestamp conversion
 │   └── auth-context.tsx      # Authentication context
 ├── types/                    # TypeScript definitions
 │   └── index.ts
+├── .husky/                   # Git hooks
+│   ├── pre-commit            # Type check on commit
+│   ├── commit-msg            # Validate commit message
+│   └── pre-push              # Build check on push
+├── docs/                     # Documentation
+│   └── SEO_IMPLEMENTATION.md
+├── commitlint.config.js      # Commit message rules
+├── .lintstagedrc.js          # Lint-staged configuration
+├── CHANGELOG.md              # Version history
 └── .env.example              # Environment variables template
 ```
 
@@ -96,6 +142,7 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 
 # Firebase Admin (JSON escapate)
 FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
@@ -114,9 +161,10 @@ MAX_DAILY_DISCOVERIES=50
 
 1. Creează un proiect pe [Firebase Console](https://console.firebase.google.com/)
 2. Activează Authentication cu Google Provider
-3. Creează o bază de date Firestore
-4. Descarcă Service Account Key pentru Firebase Admin SDK
-5. Configurează regulile Firestore (vezi mai jos)
+3. Activează Google Analytics pentru Firebase
+4. Crează o bază de date Firestore
+5. Descarcă Service Account Key pentru Firebase Admin SDK
+6. Configurează regulile Firestore (vezi mai jos)
 
 ### 5. Configurează Azure OpenAI
 
@@ -276,14 +324,27 @@ npm run lint
 
 # Build test
 npm run build
+
+# Git hooks test (runs automatically on commit/push)
+npm run prepare
 ```
 
 ## 📝 Roadmap
 
+### ✅ Completed
+- [x] Firebase Analytics integration cu 15+ custom events
+- [x] SEO optimization complet (robots.txt, sitemap.xml, structured data)
+- [x] Git hooks pentru quality assurance automată
+- [x] Conventional commits și semantic versioning
+- [x] Safe timestamp handling pentru preveni erori
+
+### 🚧 In Progress
 - [ ] Sistem de moderare pentru cuvinte
 - [ ] Export/backup automat Firestore
 - [ ] PWA support pentru offline
-- [ ] Telemetrie și analytics
+
+### 🔮 Future
+- [ ] Telemetrie și analytics avansată
 - [ ] API public pentru dezvoltatori
 - [ ] Mobile app (React Native)
 - [ ] Învățare prin spaced repetition
